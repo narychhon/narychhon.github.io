@@ -1,6 +1,6 @@
-import { useEffect, useState } from 'react'
-import { ArrowDown, ArrowUpRight, Menu, X, Mail, Layers3 } from 'lucide-react'
-import { achievements, designWorks, events, technologies, profile, kolapseSlides } from './data'
+import { useEffect, useRef, useState, type CSSProperties } from 'react'
+import { ArrowDown, ArrowUpRight, Menu, X, Mail } from 'lucide-react'
+import { achievements, designWorks, events, technologies, profile } from './data'
 import './App.css'
 
 const nav = [
@@ -10,28 +10,43 @@ const nav = [
 
 function App() {
   const [menuOpen, setMenuOpen] = useState(false)
-  const [activeDesign, setActiveDesign] = useState('All')
   const [lightbox, setLightbox] = useState<typeof designWorks[number] | null>(null)
-  const [kolapseSlide, setKolapseSlide] = useState(0)
+  const [projectSlide, setProjectSlide] = useState(0)
+  const [achievementSlide, setAchievementSlide] = useState(0)
+  const [achievementPaused, setAchievementPaused] = useState(false)
+  const designStripRef = useRef<HTMLDivElement>(null)
 
   useEffect(() => {
-    document.title = `${profile.name} — Multidisciplinary Portfolio`
+    document.title = `${profile.name} — The Only Limit Is The Sky`
   }, [])
 
   useEffect(() => {
     const interval = window.setInterval(() => {
-      setKolapseSlide((current) => (current + 1) % kolapseSlides.length)
+      setProjectSlide((current) => current + 1)
     }, 4000)
     return () => window.clearInterval(interval)
   }, [])
+
+  useEffect(() => {
+    if (achievementPaused) return
+    const interval = window.setInterval(() => {
+      setAchievementSlide((current) => (current + 1) % achievements.length)
+    }, 5000)
+    return () => window.clearInterval(interval)
+  }, [achievementPaused])
 
   const goTo = (id: string) => {
     setMenuOpen(false)
     document.getElementById(id)?.scrollIntoView({ behavior: 'smooth' })
   }
 
-  const designFilters = ['All', ...Array.from(new Set(designWorks.map((work) => work.category)))]
-  const filteredDesign = activeDesign === 'All' ? designWorks : designWorks.filter((work) => work.category === activeDesign)
+  const renderDesignCard = (work: typeof designWorks[number]) => (
+    <button className={`design-card ${work.color}`} key={work.title} onClick={() => setLightbox(work)} aria-label={`Open ${work.title} preview`} style={{ '--r': work.ratio, '--s': work.scale } as CSSProperties}>
+      <div className="design-art">
+        {'image' in work && work.image ? <img className="design-real-image" src={work.image} alt="" /> : <div className="art-shape" />}
+      </div>
+    </button>
+  )
 
   return (
     <>
@@ -57,14 +72,16 @@ function App() {
         <section className="hero" id="home">
           <div className="hero-index"><span>Portfolio</span><span>2026—∞</span></div>
           <div className="hero-copy">
-            <p className="eyebrow"><span>●</span> Independent profile / Available for opportunities</p>
-            <h1><span>BEYOND</span><span>ONE DISCIPLINE<span className="lime-dot">.</span></span></h1>
+            <p className="eyebrow"><span>●</span> Cyber Security, Emcee, TechBiz, Graphic Designer</p>
+            <h1><span>THE ONLY LIMIT</span><span><em>is</em> <span className="sky-highlight">THE SKY</span><span className="lime-dot">.</span></span></h1>
             <p className="hero-subline">Technology. Creativity. Communication. <em>Impact.</em></p>
+            <a className="hero-linkedin" href="https://www.linkedin.com/in/narychhon/" target="_blank" rel="noopener noreferrer">Let's connect <ArrowUpRight /></a>
           </div>
           <div className="hero-visual">
             <div className="portrait-placeholder">
               <div className="portrait-grid"></div>
-              <img className="professional-portrait" src="/images/profile/professional_pic.png" alt="Professional portrait" />
+              <img className="professional-portrait" src="/images/profile/professional-portrait.webp" alt="Professional portrait" />
+              <div className="portrait-caption"><strong>NARY CHHON</strong><span>Call Me<b>“ARIE”</b></span></div>
             </div>
           </div>
           <button className="scroll-cue" onClick={() => goTo('about')} aria-label="Scroll to about"><ArrowDown /></button>
@@ -77,7 +94,10 @@ function App() {
         <section className="about-section section" id="about">
           <div className="section-label"><span>01</span> About</div>
           <div className="about-grid">
-            <h2>I'M STILL A KID WHO <em>WANT TO EXPLORE THE WORLD.</em></h2>
+            <div className="about-heading-wrap">
+              <h2>I'M STILL A KID WHO <em>WANT TO EXPLORE THE WORLD.</em></h2>
+              <figure className="kid-photo"><img src="/images/about/a-kid.webp" alt="Nary Chhon as a child holding a collection of stickers" /></figure>
+            </div>
             <div className="about-copy">
               <p>{profile.bio}</p>
               <div className="value-list">
@@ -97,54 +117,75 @@ function App() {
             <p>Technical work across cybersecurity, information technology, programming, and research.</p>
           </div>
           <div className="project-list">
-            {technologies.map((project, i) => (
-              <article className="project-row" key={project.title}>
-                <div className="project-number">0{i + 1}</div>
-                <div className="project-preview">
-                  {i === 0 ? <div className="kolapse-slideshow" aria-label="KOLAPSE project image slideshow">{kolapseSlides.map((slide, slideIndex) => <img key={slide} className={`project-real-image kolapse-slide ${slideIndex === kolapseSlide ? 'active' : ''}`} src={slide} alt={`${project.title} preview ${slideIndex + 1}`} />)}</div> : ('image' in project && project.image ? <img className="project-real-image" src={project.image} alt={`${project.title} preview`} /> : <div className="terminal-art"><span>PORTFOLIO / PROJECT</span><b>{project.category}</b><div><i></i><i></i><i></i></div></div>)}
-                  <span className="placeholder-badge">{project.status}</span>
-                </div>
-                <div className="project-info">
-                  <p className="project-category">{project.category}</p>
-                  <h3>{project.title}</h3>
-                  <p>{project.description}</p>
-                  {'methodology' in project && project.methodology && <p className="project-detail"><strong>Approach</strong>{project.methodology}</p>}
-                  {'results' in project && project.results && <p className="project-detail"><strong>Results / status</strong>{project.results}</p>}
-                  <dl><div><dt>Role</dt><dd>{project.role}</dd></div><div><dt>Tools</dt><dd>{project.tools.join(' · ')}</dd></div></dl>
-                  {'link' in project && project.link ? <a className="project-demo-link" href={project.link} target="_blank" rel="noreferrer">View live demo <ArrowUpRight /></a> : 'repository' in project && project.repository ? <a className="project-demo-link" href={project.repository} target="_blank" rel="noreferrer">View GitHub repository <ArrowUpRight /></a> : <button className="circle-link" aria-label={`View ${project.title}`} onClick={() => document.getElementById('contact')?.scrollIntoView({ behavior: 'smooth' })}><ArrowUpRight /></button>}
-                </div>
-              </article>
-            ))}
+            {technologies.map((project, i) => {
+              const slides = 'slides' in project ? project.slides : undefined
+              return (
+                <article className="project-row" key={project.title}>
+                  <div className="project-number">0{i + 1}</div>
+                  <div className="project-preview">
+                    {slides ? <div className="project-slideshow" aria-label={`${project.title} image slideshow`}>{slides.map((slide, slideIndex) => <img key={slide} className={`project-real-image project-slide ${slideIndex === projectSlide % slides.length ? 'active' : ''} ${'slideFit' in project && project.slideFit === 'contain' ? 'fit-contain' : ''}`} src={slide} alt={`${project.title} preview ${slideIndex + 1}`} />)}</div> : <div className="terminal-art"><span>PORTFOLIO / PROJECT</span><b>{project.category}</b><div><i></i><i></i><i></i></div></div>}
+                    <span className="placeholder-badge">{project.status}</span>
+                  </div>
+                  <div className="project-info">
+                    <p className="project-category">{project.category}</p>
+                    <h3>{project.title}</h3>
+                    <p>{project.description}</p>
+                    {'methodology' in project && project.methodology && <p className="project-detail"><strong>Approach</strong>{project.methodology}</p>}
+                    {'results' in project && project.results && <p className="project-detail"><strong>Results / status</strong>{project.results}</p>}
+                    <dl><div><dt>Role</dt><dd>{project.role}</dd></div>{'tools' in project && project.tools && <div><dt>Tools</dt><dd>{project.tools.join(' · ')}</dd></div>}</dl>
+                    <div className="project-actions">
+                      {'pitchdeck' in project && project.pitchdeck && <a className="project-demo-link" href={project.pitchdeck} target="_blank" rel="noopener noreferrer">View pitchdeck <ArrowUpRight /></a>}
+                      {'link' in project && project.link && <a className="project-demo-link" href={project.link} target="_blank" rel="noopener noreferrer">View live demo <ArrowUpRight /></a>}
+                      {'prototype' in project && project.prototype && <a className="project-demo-link" href={project.prototype} target="_blank" rel="noopener noreferrer">View Figma prototype <ArrowUpRight /></a>}
+                      {'repository' in project && project.repository && <a className="project-demo-link" href={project.repository} target="_blank" rel="noopener noreferrer">View GitHub repository <ArrowUpRight /></a>}
+                      {'report' in project && project.report && <a className="project-demo-link" href={project.report} target="_blank" rel="noopener noreferrer">View project report <ArrowUpRight /></a>}
+                      {!('pitchdeck' in project && project.pitchdeck) && !('link' in project && project.link) && !('prototype' in project && project.prototype) && !('repository' in project && project.repository) && !('report' in project && project.report) && <button className="circle-link" aria-label={`View ${project.title}`} onClick={() => document.getElementById('contact')?.scrollIntoView({ behavior: 'smooth' })}><ArrowUpRight /></button>}
+                    </div>
+                  </div>
+                </article>
+              )
+            })}
           </div>
         </section>
 
         <section className="creative-section section" id="creative">
           <div className="section-label"><span>03</span> Creative works</div>
-          <div className="creative-heading"><h2>Ideas made <em>visible.</em></h2><p>Graphic design, brand systems, publications, and visual communication.</p></div>
-          <div className="filter-row" role="group" aria-label="Filter creative work">
-            {designFilters.map((filter) => <button className={activeDesign === filter ? 'active' : ''} key={filter} onClick={() => setActiveDesign(filter)}>{filter}</button>)}
+          <div className="creative-heading">
+            <h2>DESIGNER <em>DUMP...</em></h2>
+            <p>A running collection of design work and visual experiments.</p>
           </div>
-          <div className="design-grid">
-            {filteredDesign.map((work, i) => (
-              <button className={`design-card ${work.color}`} key={work.title} onClick={() => setLightbox(work)}>
-                <div className="design-art">
-                  {'image' in work && work.image ? <img className="design-real-image" src={work.image} alt={work.title} /> : <><div className="art-shape"></div><strong>{work.title}</strong></>}
-                  <span className="art-type">{work.type}</span>
-                </div>
-                <div className="design-meta"><span>0{i + 1}</span><div><strong>{work.title}</strong><small>{work.category}</small></div><ArrowUpRight /></div>
-              </button>
-            ))}
+          <div className="design-grid" ref={designStripRef} aria-label="Creative work showcase">
+            {designWorks.map((work) => {
+              if (work.title === 'Artwork 03') return null
+              if (work.title === 'Artwork 01') {
+                const stacked = designWorks.find((item) => item.title === 'Artwork 03')
+                return (
+                  <div className="design-stack" key="artwork-stack" style={{ '--r': work.ratio, '--s': work.scale } as CSSProperties}>
+                    {renderDesignCard(work)}
+                    {stacked && renderDesignCard(stacked)}
+                  </div>
+                )
+              }
+              return renderDesignCard(work)
+            })}
           </div>
+          <button className="design-pan-hint" onClick={() => designStripRef.current?.scrollTo({ left: designStripRef.current.scrollWidth, behavior: 'smooth' })}>Pan to see all →</button>
         </section>
 
         <section className="events-section section" id="events">
           <div className="section-label light"><span>04</span> Events & experiences</div>
-          <div className="events-heading"><h2>Presence in the <em>room.</em></h2><p>Hosting, speaking, moderation, organization, and collaborative leadership.</p></div>
+          <div className="events-heading">
+            <div className="events-heading-main">
+              <h2>Presence in the <em>room.</em></h2>
+              <p className="events-stat"><strong>Emcee Host</strong> — from sports events to international conferences. <strong>50+ events</strong> in the past 3 years.</p>
+            </div>
+            <p className="events-volunteer">Volunteering became a way to learn by showing up — from local community runs to international conferences, helping where needed and meeting people along the way.</p>
+          </div>
           <div className="event-grid">
             {events.map((event, i) => (
-              <article className="event-card" key={event.title}>
-                <div className="event-photo">{'image' in event && event.image ? <img className="event-real-image" src={event.image} alt={event.title} /> : <><span>Event photograph<br />placeholder</span><b>{i + 1}</b></>}</div>
-                <div className="event-info"><p>{event.role} / {event.date}</p><h3>{event.title}</h3><dl><div><dt>Venue</dt><dd>{event.venue}</dd></div></dl><p>{event.description}</p></div>
+              <article className="event-card" key={event.title} style={{ '--r': event.ratio } as CSSProperties}>
+                <div className="event-photo"><img className="event-real-image" src={event.image} alt={event.title} /><b>0{i + 1}</b></div>
+                <div className="event-info"><h3>{event.title}</h3></div>
               </article>
             ))}
           </div>
@@ -153,13 +194,27 @@ function App() {
         <section className="achievements-section section" id="achievements">
           <div className="section-label"><span>05</span> Achievements</div>
           <div className="achievement-heading"><h2>Continual learning.<br /><em>Documented growth.</em></h2></div>
-          <div className="achievement-list">
+          <div className="achievement-slideshow" onMouseEnter={() => setAchievementPaused(true)} onMouseLeave={() => setAchievementPaused(false)} onFocus={() => setAchievementPaused(true)} onBlur={() => setAchievementPaused(false)}>
             {achievements.map((item, i) => (
-              <article className="achievement-row" key={item.title}>
-                <div className="certificate-placeholder"><Layers3 /><span>Certificate image</span></div>
-                <div className="achievement-copy"><p>0{i + 1} / {item.date}</p><h3>{item.title}</h3><strong>{item.issuer}</strong><p>{item.detail}</p></div>
+              <article key={item.title} className={`achievement-slide ${item.color} ${i === achievementSlide ? 'active' : ''}`} aria-hidden={i !== achievementSlide}>
+                <div className="achievement-slide-art">
+                  <div className="achievement-certificate">
+                    {'image' in item && item.image ? <img src={item.image} alt={item.title} /> : <span className="achievement-slide-fallback">{item.title}</span>}
+                  </div>
+                  <span className="achievement-slide-index">0{i + 1} / 0{achievements.length}</span>
+                </div>
+                <div className="achievement-slide-copy">
+                  <p className="achievement-slide-field">{item.field}</p>
+                  <h3>{item.title}</h3>
+                  {(item.date || item.issuer) && <p className="achievement-slide-meta">{[item.date, item.issuer].filter(Boolean).join(' · ')}</p>}
+                </div>
               </article>
             ))}
+            <div className="achievement-controls">
+              <div className="achievement-dots" role="group" aria-label="Choose certificate">
+                {achievements.map((item, i) => <button key={item.title} className={i === achievementSlide ? 'active' : ''} onClick={() => setAchievementSlide(i)} aria-label={`Show ${item.title}`} aria-current={i === achievementSlide ? 'true' : undefined} />)}
+              </div>
+            </div>
           </div>
         </section>
 
@@ -169,7 +224,7 @@ function App() {
             <div><p className="contact-kicker">Have a project, role, or idea?</p><h2>LET'S MAKE<br /><em>IT HAPPEN.</em></h2></div>
             <div className="contact-actions">
               {profile.email ? <a className="email-link" href={`mailto:${profile.email}`}><Mail />{profile.email}<ArrowUpRight /></a> : <div className="email-link"><Mail />Add your professional email<ArrowUpRight /></div>}
-              <div className="social-links">{profile.linkedin ? <a href={profile.linkedin} target="_blank" rel="noreferrer"><span>in</span>LinkedIn</a> : <span className="social-placeholder">LinkedIn URL to add</span>} {profile.github ? <a href={profile.github} target="_blank" rel="noreferrer"><span>gh</span>GitHub</a> : <span className="social-placeholder">GitHub URL to add</span>}</div>
+              <div className="social-links">{profile.linkedin ? <a className="linkedin-cta" href={profile.linkedin} target="_blank" rel="noopener noreferrer"><span>in</span>LinkedIn <ArrowUpRight /></a> : <span className="social-placeholder">LinkedIn URL to add</span>}</div>
             </div>
           </div>
         </section>
@@ -177,7 +232,7 @@ function App() {
 
       <footer><button onClick={() => goTo('home')}>© 2026 {profile.name}</button><p>Technology · Creativity · Communication · Impact</p><button onClick={() => goTo('home')}>Back to top ↑</button></footer>
 
-      {lightbox && <div className="lightbox" role="dialog" aria-modal="true" aria-label={lightbox.title} onClick={() => setLightbox(null)}><button className="lightbox-close" onClick={() => setLightbox(null)} aria-label="Close preview"><X /></button><div className="lightbox-art" onClick={(event) => event.stopPropagation()}><div className={`large-art ${lightbox.color}`}>{'image' in lightbox && lightbox.image ? <img className="lightbox-real-image" src={lightbox.image} alt={lightbox.title} /> : <><span>{lightbox.type}</span><strong>{lightbox.title}</strong></>}</div><p>{lightbox.category}</p></div></div>}
+      {lightbox && <div className="lightbox" role="dialog" aria-modal="true" aria-label="Creative work preview" onClick={() => setLightbox(null)}><button className="lightbox-close" onClick={() => setLightbox(null)} aria-label="Close preview"><X /></button><div className="lightbox-art" onClick={(event) => event.stopPropagation()}><div className={`large-art ${lightbox.color}`}>{'image' in lightbox && lightbox.image ? <img className="lightbox-real-image" src={lightbox.image} alt="" /> : <div className="art-shape" />}</div></div></div>}
     </>
   )
 }

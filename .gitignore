@@ -22,3 +22,16 @@ dist-ssr
 *.njsproj
 *.sln
 *.sw?
+
+# Full-size source assets (deployed copies live in public/)
+/InnoBox/
+/LMC/
+/MC/
+/TOS/
+/about me/
+/achievements/
+/artwork/
+/kolapse/
+/lady bug/
+/ladybug/
+/volunteering/

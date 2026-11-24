@@ -1,6 +1,6 @@
-# Personal Multidisciplinary Portfolio
+# Nary Chhon — Portfolio
 
-A responsive React + TypeScript portfolio built with Vite.
+A responsive React + TypeScript portfolio built with Vite and deployed to GitHub Pages.
 
 ## Run locally
 
@@ -9,38 +9,37 @@ npm install
 npm run dev
 ```
 
-Open `http://localhost:5173`.
+Open the URL printed by Vite (typically `http://localhost:5173`; if occupied, Vite uses the next free port such as `5175`).
 
-## Production
+## Check before publishing
 
 ```bash
+npm run lint
 npm run build
-npm run preview
 ```
 
-Deploy the generated `dist/` directory to Netlify, Vercel, GitHub Pages, or another static host.
+`dist/` is the production output. Pushes to `main` trigger `.github/workflows/deploy.yml`, which builds and deploys it to GitHub Pages. The Vite `base` is `/` because this repo is published at the domain root (`narychhon.github.io`).
 
 ## Update content
 
 Edit `src/data.ts`:
 
-- `profile`: name, biography, email, CV, LinkedIn, and GitHub
-- `technologies`: technical and research projects
+- `profile`: name, bio, email, CV, LinkedIn
+- `technologies`: project case studies
 - `designWorks`: creative work cards
-- `events`: hosting, speaking, moderation, and organization entries
-- `achievements`: awards, certificates, training, and recognition
+- `events`: memory-board event photos and names
+- `achievements`: certificates and training
 
-## Add real assets
+## Assets
 
-Use these folders:
+Optimized files used by the site live in `public/`:
 
-- `public/images/profile/` — professional portrait
-- `public/images/technology/` — project screenshots
-- `public/images/design/` — artwork and visual work
-- `public/images/events/` — event photographs
-- `public/images/achievements/` — certificates and awards
-- `public/documents/` — CV and supporting documents
+- `public/images/profile/` — portrait
+- `public/images/about/` — childhood photo
+- `public/images/projects/` — project slides
+- `public/images/design/` — artwork
+- `public/images/events/` — event photos
+- `public/images/achievements/` — certificates
+- `public/documents/` — CV and pitch decks
 
-Replace `public/documents/cv-placeholder.txt` with a PDF and set `cvUrl` to `/documents/your-cv.pdf`.
-
-The current creative, event, portrait, project, and achievement areas are intentionally marked as placeholders and do not claim fictional accomplishments.
+Original, full-size source files are kept outside `public/` in their source folders and are not needed by the deployed site. Prefer WebP images and keep `public/documents/` to files that are actually linked from `src/data.ts`.
